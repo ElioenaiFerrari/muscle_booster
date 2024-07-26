@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body></body>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', (e) => {
+      e.preventDefault();
+
+      const ws = new WebSocket('ws://localhost:8000/ws');
+
+      ws.onopen = (e) => {
+        console.log('Connected to server');
+        ws.send(
+          JSON.stringify({
+            weight: 86.0,
+            height: 1.7,
+            weight_goal: 75.0,
+            hours_per_day: 'two',
+            muscle_goal: 'gain',
+            training_type: 'home',
+            motivations: ['healthy', 'aesthetic'],
+          })
+        );
+      };
+
+      ws.onmessage = (e) => {
+        const message = e.data;
+        document.body.innerHTML = message;
+      };
+    });
+  </script>
+  <style>
+    *,
+    html {
+      font-family: 'Roboto', sans-serif;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+  </style>
+</html>
