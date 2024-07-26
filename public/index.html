@@ -4,53 +4,288 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-    <script src="https://cdn.tailwindcss.com"></script>
 
+    <!-- Import Google Icon Font -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap"
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet"
     />
+    <!-- Import Materialize CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+    />
+
+    <style>
+      *,
+      html {
+        font-family: 'Roboto', sans-serif;
+        padding: 0;
+        margin: 0;
+        outline: none;
+        box-sizing: border-box;
+      }
+
+      body {
+        display: grid;
+        grid-template-columns: 600px 1fr;
+        gap: 8px;
+      }
+
+      #form {
+        width: 400px;
+        margin: 0 auto;
+      }
+
+      #motivations {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      h3 {
+        margin-top: 16px;
+        color: #333;
+        font-size: 1.5rem;
+      }
+
+      ul {
+        padding: 0;
+        margin: 0;
+      }
+
+      li {
+        font-size: 1.2rem;
+        color: gray;
+      }
+
+      #result {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2px;
+      }
+
+      button {
+        margin-top: 16px;
+      }
+    </style>
   </head>
-  <body></body>
+  <body>
+    <form id="form" class="col s12">
+      <div class="row">
+        <div class="input-field col s12">
+          <input
+            id="height"
+            type="number"
+            name="height"
+            step="0.10"
+            min="0.10"
+            max="3.00"
+          />
+          <label for="height">Altura</label>
+        </div>
+        <div class="input-field col s12">
+          <input id="weight" type="number" name="weight" />
+          <label for="weight">Peso</label>
+        </div>
+        <div class="input-field col s12">
+          <input id="weight_goal" type="number" name="weight_goal" />
+          <label for="weight_goal">Meta de peso</label>
+        </div>
+        <div class="input-field col s12">
+          <select name="hours_per_day">
+            <option value="" disabled selected>Horas por dia</option>
+            <option value="less_than_one">Menos de 1h</option>
+            <option value="one">1h</option>
+            <option value="two">2h</option>
+            <option value="three">3h</option>
+            <option value="four">4h</option>
+            <option value="more_than_four">Mais de 4h</option>
+          </select>
+          <label>Horas de treino por dia</label>
+        </div>
+        <div class="input-field col s12">
+          <select name="muscle_goal">
+            <option value="" disabled selected>Objetivo muscular</option>
+            <option value="gain">Ganhar</option>
+            <option value="lose">Perder</option>
+            <option value="maintain">Manter</option>
+          </select>
+          <label>Objetivo muscular</label>
+        </div>
+        <div class="input-field col s12">
+          <select name="training_type">
+            <option value="" disabled selected>Tipo de treino</option>
+            <option value="gym">Academia</option>
+            <option value="home">Casa</option>
+            <option value="hybrid">Híbrido</option>
+          </select>
+          <label>Tipo de treino</label>
+        </div>
+      </div>
 
-  <script>
-    window.addEventListener('DOMContentLoaded', (e) => {
-      e.preventDefault();
+      <div id="motivations">
+        <p>
+          <label>
+            <input type="checkbox" name="motivations" value="healthy" />
+            <span>Saúde</span>
+          </label>
+        </p>
+        <p>
+          <label>
+            <input type="checkbox" name="motivations" value="aesthetic" />
+            <span>Estética</span>
+          </label>
+        </p>
+        <p>
+          <label>
+            <input type="checkbox" name="motivations" value="strength" />
+            <span>Força</span>
+          </label>
+        </p>
+        <p>
+          <label>
+            <input type="checkbox" name="motivations" value="flexibility" />
+            <span>Flexibilidade</span>
+          </label>
+        </p>
+        <p>
+          <label>
+            <input type="checkbox" name="motivations" value="endurance" />
+            <span>Resistência</span>
+          </label>
+        </p>
+      </div>
+      <button type="submit" class="btn waves-effect waves-light">Submit</button>
+    </form>
+    <div id="result"></div>
 
-      const ws = new WebSocket('ws://localhost:8000/ws');
+    <!-- Import jQuery before Materialize JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-      ws.onopen = (e) => {
-        console.log('Connected to server');
-        ws.send(
-          JSON.stringify({
-            weight: 86.0,
-            height: 1.7,
-            weight_goal: 75.0,
-            hours_per_day: 'two',
-            muscle_goal: 'gain',
-            training_type: 'home',
-            motivations: ['healthy', 'aesthetic'],
-          })
-        );
-      };
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        var elems = document.querySelectorAll('select');
+        var instances = M.FormSelect.init(elems);
 
-      ws.onmessage = (e) => {
-        const message = e.data;
-        document.body.innerHTML = message;
-      };
-    });
-  </script>
-  <style>
-    *,
-    html {
-      font-family: 'Roboto', sans-serif;
-    }
+        const ws = new WebSocket('ws://localhost:8000/ws');
+        const result = document.getElementById('result');
 
-    body {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
-  </style>
+        ws.onopen = (e) => {
+          console.log('Connected to server');
+          ws.onmessage = (e) => {
+            const response = JSON.parse(e.data);
+            const {
+              objectives,
+              motivations,
+              training,
+              diet,
+              observations,
+              tips,
+              considerations,
+            } = response;
+
+            const createList = (items) => {
+              const ul = document.createElement('ul');
+              items.forEach((item) => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                ul.appendChild(li);
+              });
+              return ul;
+            };
+
+            result.innerHTML = '';
+            const objectivesContainer = document.createElement('div');
+            const objectivesTitle = document.createElement('h3');
+            objectivesTitle.textContent = 'Objetivos';
+            objectivesContainer.appendChild(objectivesTitle);
+            objectivesContainer.appendChild(createList(objectives));
+            result.appendChild(objectivesContainer);
+
+            const motivationsContainer = document.createElement('div');
+            const motivationsTitle = document.createElement('h3');
+            motivationsTitle.textContent = 'Motivações';
+            motivationsContainer.appendChild(motivationsTitle);
+            motivationsContainer.appendChild(createList(motivations));
+            result.appendChild(motivationsContainer);
+
+            const trainingContainer = document.createElement('div');
+            const trainingTitle = document.createElement('h3');
+            trainingTitle.textContent = 'Treino';
+            trainingContainer.appendChild(trainingTitle);
+            trainingContainer.appendChild(createList(training));
+            result.appendChild(trainingContainer);
+
+            const dietContainer = document.createElement('div');
+            const dietTitle = document.createElement('h3');
+            dietTitle.textContent = 'Dieta';
+            dietContainer.appendChild(dietTitle);
+            dietContainer.appendChild(createList(diet));
+            result.appendChild(dietContainer);
+
+            const observationsContainer = document.createElement('div');
+            const observationsTitle = document.createElement('h3');
+            observationsTitle.textContent = 'Observações';
+            observationsContainer.appendChild(observationsTitle);
+            observationsContainer.appendChild(createList(observations));
+            result.appendChild(observationsContainer);
+
+            const tipsContainer = document.createElement('div');
+            const tipsTitle = document.createElement('h3');
+            tipsTitle.textContent = 'Dicas';
+            tipsContainer.appendChild(tipsTitle);
+            tipsContainer.appendChild(createList(tips));
+            result.appendChild(tipsContainer);
+
+            const considerationsContainer = document.createElement('div');
+            const considerationsTitle = document.createElement('h3');
+            considerationsTitle.textContent = 'Considerações';
+            considerationsContainer.appendChild(considerationsTitle);
+            considerationsContainer.appendChild(createList(considerations));
+            result.appendChild(considerationsContainer);
+
+            const printPdfButton = document.createElement('button');
+            printPdfButton.textContent = 'Print PDF';
+            // apply material design classes
+            printPdfButton.classList.add('btn', 'waves-effect', 'waves-light');
+            printPdfButton.style.width = '100%';
+            printPdfButton.style.height = '48px';
+            printPdfButton.style.marginTop = '16px';
+            printPdfButton.addEventListener('click', () => {
+              const { jsPDF } = window.jspdf;
+              const pdf = new jsPDF();
+              // open #result in new window
+              const printWindow = window.open(
+                '',
+                'printWindow',
+                'height=600,width=800'
+              );
+              result.removeChild(printPdfButton);
+              printWindow.document.write(result.innerHTML);
+              printWindow.document.close();
+              printWindow.print();
+              result.appendChild(printPdfButton);
+            });
+
+            result.appendChild(printPdfButton);
+          };
+        };
+
+        const form = document.getElementById('form');
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const formData = new FormData(form);
+          const motivations = formData.getAll('motivations');
+          const data = Object.fromEntries(formData.entries());
+          data.motivations = motivations;
+          data.height = parseFloat(data.height);
+          data.weight = parseFloat(data.weight);
+          data.weight_goal = parseFloat(data.weight_goal);
+          ws.send(JSON.stringify(data));
+        });
+      });
+    </script>
+  </body>
 </html>

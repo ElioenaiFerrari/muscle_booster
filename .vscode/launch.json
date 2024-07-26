@@ -1,0 +1,65 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'muscle_booster'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=muscle_booster"
+        ],
+        "filter": {
+          "name": "muscle_booster",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'muscle_booster'",
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=muscle_booster",
+          "--package=muscle_booster"
+        ],
+        "filter": {
+          "name": "muscle_booster",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'muscle_booster'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--bin=muscle_booster",
+          "--package=muscle_booster"
+        ],
+        "filter": {
+          "name": "muscle_booster",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}

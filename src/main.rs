@@ -10,6 +10,18 @@ use openai_api_rs::v1::{
     common::GPT4_O,
 };
 use rocket::State;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Serialize, Deserialize)]
+struct Response {
+    pub objectives: Vec<String>,
+    pub motivations: Vec<String>,
+    pub training: Vec<String>,
+    pub diet: Vec<String>,
+    pub observations: Vec<String>,
+    pub tips: Vec<String>,
+    pub considerations: Vec<String>,
+}
 
 struct Deps {
     openai_client: OpenAIClient,
@@ -43,38 +55,24 @@ fn plan_stream(ws: rocket_ws::WebSocket, state: &State<Deps>) -> rocket_ws::Stre
         for await message in  ws {
             match message {
                 Ok(message) => {
-                    let params: CreatePlanDto = serde_json::from_str(&message.into_text()?).unwrap();
+                    let params: CreatePlanDto = serde_json::from_str(&message.to_string()).unwrap();
                     let req = ChatCompletionRequest::new(GPT4_O.to_string(), vec![
                         chat_completion::ChatCompletionMessage{
                             role: chat_completion::MessageRole::system,
                             content: chat_completion::Content::Text(r#"
-                            Você irá responder em português e deverá criar um plano de treino baseado nos dados enviados pelo usuário. O formato da resposta deve ser html sem MARKDOWN.
-                            Irei usar tailwindcss para estilizar o html.
+                            Você irá responder em português e deverá criar um plano de treino baseado nos dados enviados pelo usuário. O formato da resposta deve ser um json sem MARKDOWN.
                             Estrutura:
-                            div, classes="bg-white shadow-lg p-4 rounded-lg max-w-md"
-                                h2 - Plano de treino, classes="text-2xl font-bold"
-                                    div, classes="bg-white shadow-lg p-4 rounded-lg"
-                                    h3 - Objetivos, classes="text-lg font-bold"
-                                        ul, classes="list-disc pl-4"
-                                            Itens sendo listados
-                                    h3 - Motivações, classes="text-lg font-bold"
-                                        ul, classes="list-disc pl-4"
-                                            Itens sendo listados
-                                    h3 - Treino, classes="text-lg font-bold"
-                                        ul, classes="list-disc pl-4"
-                                            Itens sendo listados
-                                    h3 - Dieta, classes="text-lg font-bold"
-                                        ul, classes="list-disc pl-4"
-                                            Itens sendo listados
-                                    h3 - Observações, classes="text-lg font-bold"
-                                        ul, classes="list-disc pl-4"
-                                            Itens sendo listados
-                                    h3 - Dicas, classes="text-lg font-bold"
-                                        ul, classes="list-disc pl-4"
-                                            Itens sendo listados
-                                    h3 - Considerações, classes="text-lg font-bold"
-                                        ul, classes="list-disc pl-4"
-                                            Itens sendo listados
+                            {
+                                "objectives": ["Objetivo 1", "Objetivo 2"],
+                                "motivations": ["Motivação 1", "Motivação 2"],
+                                "training": ["Treino 1", "Treino 2"],
+                                "diet": ["Dieta 1", "Dieta 2"],
+                                "observations": ["Observação 1", "Observação 2"],
+                                "tips": ["Dica 1", "Dica 2"],
+                                "considerations": ["Consideração 1", "Consideração 2"]
+                            }
+                            Quero no mínimo 4 itens em cada campo.
+                            Seja específico no campo treinos, exemplo: "Treino 1: 3 séries de 10 repetições de supino reto com 50kg", "Treino 2: 4 séries de 12 repetições de rosca direta com 10kg".
                             "#.to_string()),
                             name: None,
                             tool_call_id: None,
@@ -90,9 +88,12 @@ fn plan_stream(ws: rocket_ws::WebSocket, state: &State<Deps>) -> rocket_ws::Stre
                     ]);
 
                     let result = state.openai_client.chat_completion(req).await.unwrap();
+                    let content = result.choices[0].message.content.to_owned().unwrap().to_string();
+                    let response: Response = serde_json::from_str(&content).unwrap();
+                    let response = serde_json::to_string(&response).unwrap();
 
 
-                    yield rocket_ws::Message::Text(result.choices[0].message.content.to_owned().unwrap())
+                    yield rocket_ws::Message::Text(response)
                 }
                 Err(e) => {
                     println!("{:?}", e);

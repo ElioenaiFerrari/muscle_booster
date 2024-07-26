@@ -52,8 +52,8 @@ pub enum Motivation {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CreatePlanDto {
-    pub weight: f64,
     pub height: f64,
+    pub weight: f64,
     pub weight_goal: f64,
     pub training_type: TrainingType,
     pub hours_per_day: HoursPerDay,
